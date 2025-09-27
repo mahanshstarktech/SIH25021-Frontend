@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+qrcode[pil]
+python-multipart
+jinja2
+aiofiles

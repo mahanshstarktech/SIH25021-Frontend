@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Item - UDM Portal</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Add New Item</h1>
+    <form action="/items/add" method="post">
+        <label>RID: <input type="text" name="rid" required></label><br><br>
+        <label>Type: <input type="text" name="type" required></label><br><br>
+        <label>Manufacturer: <input type="text" name="manufacturer" required></label><br><br>
+        <label>Batch: <input type="text" name="batch" required></label><br><br>
+        <label>Material: <input type="text" name="material" required></label><br><br>
+        <label>Installed: <input type="date" name="installed" required></label><br><br>
+        <label>Status: 
+            <select name="status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </label><br><br>
+        <label>Location: <input type="text" name="location" required></label><br><br>
+        <button type="submit">Add Item</button>
+    </form>
+    <p><a href="/items/view">Back to Items</a></p>
+</body>
+</html>

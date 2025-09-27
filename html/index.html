@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Railways - Track Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .screen {
+            display: none;
+        }
+        .active-screen {
+            display: flex;
+        }
+        #qr-reader video {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 0.5rem;
+        }
+        #qr-reader-region-scan {
+            border: 4px solid #FF9800 !important;
+            border-radius: 0.5rem;
+        }
+        .tms-report-section {
+            border-bottom: 1px solid #303F9F;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        /* WebRTC Video Styles */
+        #localVideo, #remoteVideo {
+            border-radius: 0.5rem;
+            background-color: #263238;
+        }
+    </style>
+</head>
+<body class="bg-[#0D1B2A] text-white">
+
+    <div class="flex flex-col h-screen max-w-lg mx-auto">
+        <header class="bg-[#1A237E] p-4 text-center shadow-lg">
+            <h1 class="text-xl font-bold">Indian Railways Track Scanner</h1>
+        </header>
+
+        <main class="flex-grow overflow-y-auto">
+            <!-- Home Screen -->
+            <div id="home-screen" class="screen flex-col justify-center items-center p-5 text-center h-full">
+                <h2 class="text-4xl font-bold mb-2">Welcome</h2>
+                <p class="text-lg text-gray-300 mb-8">Ready to scan track fittings.</p>
+                <button onclick="navigate('scanner')" class="bg-[#FF9800] text-black font-bold py-3 px-10 rounded-full text-lg shadow-xl hover:bg-yellow-500 transition-colors">
+                    Scan QR Code
+                </button>
+            </div>
+
+            <!-- Scanner Screen -->
+            <div id="scanner-screen" class="screen flex-col items-center p-5">
+                 <p class="text-gray-300 mb-4 text-center">Align QR code within the frame to scan.</p>
+                <div id="qr-reader" class="w-full rounded-lg"></div>
+                <div id="scanner-error" class="hidden mt-4 p-4 bg-red-800 border border-red-600 text-white rounded-lg text-center w-full"></div>
+            </div>
+
+            <!-- Details Screen -->
+            <div id="details-screen" class="screen flex-col p-3 space-y-4">
+                <!-- Content will be injected by JavaScript -->
+            </div>
+
+            <!-- Inspection Form Screen -->
+            <div id="inspection-form-screen" class="screen flex-col p-5 space-y-4">
+                 <h2 class="text-2xl font-bold text-center">Inspection for <span id="inspection-rid"></span></h2>
+                 
+                 <div class="w-full">
+                    <label for="damage-type" class="block mb-1 text-gray-300">Damage Type</label>
+                    <select id="damage-type" class="w-full bg-[#263238] rounded-lg p-3 text-white">
+                        <option>None</option>
+                        <option>Rust</option>
+                        <option>Crack</option>
+                        <option>Deformation</option>
+                        <option>Loose Fitting</option>
+                        <option>Missing Component</option>
+                    </select>
+                 </div>
+
+                 <div class="w-full">
+                    <label class="block mb-1 text-gray-300">Severity</label>
+                    <div class="flex justify-around bg-[#263238] rounded-lg p-2">
+                        <label><input type="radio" name="severity" value="Low" class="mr-1">Low</label>
+                        <label><input type="radio" name="severity" value="Medium" class="mr-1">Medium</label>
+                        <label><input type="radio" name="severity" value="High" class="mr-1">High</label>
+                        <label><input type="radio" name="severity" value="Critical" class="mr-1">Critical</label>
+                    </div>
+                 </div>
+
+                 <div class="w-full">
+                    <label for="action-required" class="block mb-1 text-gray-300">Action Required</label>
+                    <select id="action-required" class="w-full bg-[#263238] rounded-lg p-3 text-white">
+                        <option>Monitor</option>
+                        <option>Clean</option>
+                        <option>Tighten</option>
+                        <option>Schedule Repair</option>
+                        <option>Immediate Replacement</option>
+                    </select>
+                 </div>
+                 
+                 <textarea id="inspection-notes" class="w-full bg-[#263238] rounded-lg p-3 h-24 text-white placeholder-gray-400" placeholder="Add inspection notes..."></textarea>
+                 
+                 <div class="bg-[#263238] p-3 rounded-lg">
+                    <label for="inspection-photo" class="block mb-2 text-gray-300">Attach Photo of Fitting:</label>
+                    <input type="file" id="inspection-photo" accept="image/*" capture="environment" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#303F9F] file:text-white hover:file:bg-indigo-700"/>
+                 </div>
+                 <button onclick="submitInspection()" class="w-full bg-[#FF9800] text-black font-bold py-3 rounded-full text-lg">Generate AI Report</button>
+            </div>
+
+            <!-- TMS Report Screen -->
+            <div id="tms-report-screen" class="screen flex-col p-4 space-y-3">
+                <!-- Content injected by JS -->
+            </div>
+            
+            <!-- WebRTC Screen -->
+            <div id="webrtc-screen" class="screen flex-col p-4 space-y-3">
+                <h2 class="text-2xl font-bold text-center text-[#FF9800]">Live Assistance Call</h2>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <div>
+                        <p class="text-center mb-1 text-gray-300">Your View</p>
+                        <video id="localVideo" autoplay playsinline muted class="w-full"></video>
+                    </div>
+                    <div>
+                        <p class="text-center mb-1 text-gray-300">Remote Expert</p>
+                        <video id="remoteVideo" autoplay playsinline class="w-full"></video>
+                    </div>
+                </div>
+                <div id="call-controls" class="space-y-3 w-full">
+                     <button id="startCallButton" onclick="startCall()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-full text-md">Start Camera</button>
+                     <button id="createOfferButton" onclick="createOffer()" class="w-full bg-green-600 text-white font-bold py-3 rounded-full text-md hidden">1. Create Call Offer</button>
+                     <button id="endCallButton" onclick="endCall()" class="w-full bg-red-600 text-white font-bold py-3 rounded-full text-md hidden">End Call</button>
+                </div>
+                <div id="signaling-ui" class="w-full space-y-3 hidden">
+                    <p class="text-xs text-gray-400 text-center">To connect, copy/paste the data between the two devices.</p>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Send this Offer/Answer:</label>
+                        <textarea id="offerAnswerText" class="w-full bg-[#263238] rounded-lg p-2 h-20 text-xs" readonly></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Paste received Offer/Answer here:</label>
+                        <textarea id="receivedOfferAnswerText" placeholder="Paste Offer from Peer 1 here..." class="w-full bg-[#263238] rounded-lg p-2 h-20 text-xs"></textarea>
+                        <button onclick="handleReceivedOfferAnswer()" class="w-full mt-1 bg-yellow-600 text-white font-bold py-2 rounded-full text-sm">2. Use Received Data</button>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-bold mb-1">Add received ICE Candidates here:</label>
+                        <textarea id="receivedIceCandidateText" placeholder="Paste ICE candidates here one by one..." class="w-full bg-[#263238] rounded-lg p-2 h-16 text-xs"></textarea>
+                        <button onclick="handleAddIceCandidate()" class="w-full mt-1 bg-purple-600 text-white font-bold py-2 rounded-full text-sm">3. Add ICE Candidate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Screen -->
+            <div id="history-screen" class="screen flex-col p-3 space-y-3">
+                <!-- Content will be injected by JavaScript -->
+            </div>
+
+            <!-- Settings Screen -->
+            <div id="settings-screen" class="screen flex-col items-center p-5 space-y-4">
+                <h2 class="text-3xl font-bold">Settings</h2>
+                <div class="w-full">
+                    <label for="server-ip" class="block mb-2 text-lg text-gray-300">Server IP Address</label>
+                    <input type="text" id="server-ip" class="w-full bg-[#263238] rounded-lg p-4 text-white placeholder-gray-400 text-lg" placeholder="e.g., 192.168.1.10">
+                </div>
+                <button onclick="saveSettings()" class="w-full bg-[#FF9800] text-black font-bold py-3 rounded-full text-lg">Save Settings</button>
+            </div>
+        </main>
+
+        <footer class="bg-[#1A237E] flex justify-around p-2 border-t border-[#303F9F]">
+            <button onclick="navigate('home')" class="text-[#C5CAE9] p-2 rounded-lg hover:bg-[#303F9F]">Home</button>
+            <button onclick="navigate('history')" class="text-[#C5CAE9] p-2 rounded-lg hover:bg-[#303F9F]">History</button>
+            <button onclick="navigate('settings')" class="text-[#C5CAE9] p-2 rounded-lg hover:bg-[#303F9F]">Settings</button>
+        </footer>
+    </div>
+
+    <script>
+        let currentScreen = 'home';
+        let serverIp = '192.168.1.10';
+        let html5QrCode = null;
+        let currentFittingData = null;
+
+        // --- WebRTC Globals ---
+        let localStream;
+        let peerConnection;
+        const configuration = {
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        };
+
+
+        // --- Navigation ---
+        function navigate(screenId, data = null) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active-screen');
+                screen.classList.add('hidden');
+            });
+
+            const targetScreen = document.getElementById(`${screenId}-screen`);
+            targetScreen.classList.remove('hidden');
+            targetScreen.classList.add('active-screen', 'flex');
+            
+            currentScreen = screenId;
+            
+            // Screen-specific actions
+            if (screenId === 'scanner') {
+                startScanner();
+            } else {
+                stopScanner();
+            }
+            
+            if (screenId !== 'webrtc') {
+                endCall(); // End any active call when navigating away
+            }
+
+            if (screenId === 'details' && data) {
+                fetchDetails(data.rid);
+            }
+             if (screenId === 'inspection-form' && data) {
+                currentFittingData = data;
+                document.getElementById('inspection-rid').textContent = data.rid;
+            }
+            if (screenId === 'tms-report' && data) {
+                renderTmsReport(data);
+            }
+            if (screenId === 'history') {
+                renderHistory();
+            }
+            if (screenId === 'settings') {
+                document.getElementById('server-ip').value = serverIp;
+            }
+        }
+
+        // --- QR Scanner Logic ---
+        function startScanner() {
+            const scannerErrorEl = document.getElementById('scanner-error');
+            scannerErrorEl.classList.add('hidden'); // Hide previous errors
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText, decodedResult) => {
+                    stopScanner();
+                    if (decodedText && decodedText.includes(':')) {
+                        const parts = decodedText.split(':');
+                        const rid = parts[parts.length - 1].split('|')[0];
+                        navigate('details', { rid });
+                    } else {
+                        alert("Invalid QR Code: The scanned QR code does not have the expected format.");
+                    }
+                },
+                (errorMessage) => {})
+                .catch((err) => {
+                    console.error(`Unable to start scanning, error: ${err}`);
+                    let userMessage = 'An unknown error occurred while starting the scanner.';
+                    if (err && err.name === 'NotAllowedError') {
+                        userMessage = '<b>Camera Access Denied.</b><br>To scan QR codes, this app needs permission to use your camera. Please grant camera access in your browser settings and refresh the page.';
+                    } else if (err && err.name === 'NotFoundError') {
+                         userMessage = '<b>No Camera Found.</b><br>Could not find a camera on this device. Please use a device with a camera.';
+                    }
+                    
+                    scannerErrorEl.innerHTML = userMessage;
+                    scannerErrorEl.classList.remove('hidden');
+                });
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error("Failed to stop scanner", err));
+            }
+        }
+
+        // --- Data Fetching & Details ---
+        async function fetchDetails(rid) {
+            const detailsContainer = document.getElementById('details-screen');
+            detailsContainer.innerHTML = `<div class="text-center p-10"><div class="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-500 mx-auto"></div></div>`;
+
+            try {
+                const url = `http://${serverIp}:8000/fittings/${rid}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
+                
+                const details = await response.json();
+                currentFittingData = details;
+                renderDetails(details);
+
+            } catch (error) {
+                detailsContainer.innerHTML = `<div class="bg-red-900 text-white p-4 rounded-lg text-center"><strong>Error:</strong> ${error.message}. Check server IP in Settings.</div>`;
+            }
+        }
+        
+        function renderDetails(details) {
+            const detailsContainer = document.getElementById('details-screen');
+            detailsContainer.innerHTML = `
+                <div class="bg-[#1C2E4A] rounded-lg p-4 shadow-lg">
+                    <h2 class="text-2xl font-bold text-[#FF9800] mb-4">${details.type.toUpperCase()} - ${details.rid}</h2>
+                    <div class="space-y-2">
+                        ${detailRowHTML("Manufacturer", details.manufacturer)}
+                        ${detailRowHTML("Status", details.status, true)}
+                        ${detailRowHTML("Location", details.current_location)}
+                        ${detailRowHTML("Material", details.material)}
+                        ${detailRowHTML("Installation Date", details.installation_date)}
+                        ${detailRowHTML("Warranty Expiry", details.warranty_expiry)}
+                    </div>
+                </div>
+                <div class="bg-[#1C2E4A] rounded-lg p-4 shadow-lg">
+                    <h3 class="text-xl font-bold mb-3">Actions</h3>
+                    <div class="space-y-3">
+                         <button onclick="navigate('inspection-form', currentFittingData)" class="w-full bg-green-600 text-white font-bold py-3 rounded-full text-md hover:bg-green-700 transition-colors">📝 Start Inspection</button>
+                         <button onclick="navigate('webrtc')" class="w-full bg-blue-600 text-white font-bold py-3 rounded-full text-md hover:bg-blue-700 transition-colors">📹 Live Assistance</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function detailRowHTML(label, value, highlight = false) {
+            const valueClass = highlight ? 'text-yellow-400' : 'text-white';
+            return `
+                <div class="flex justify-between border-b border-[#303F9F] py-2">
+                    <span class="text-gray-400">${label}</span>
+                    <span class="font-bold text-right ${valueClass}">${value}</span>
+                </div>
+            `;
+        }
+
+        // --- Inspection & AI Report ---
+        function submitInspection() {
+            const inspectionData = {
+                damageType: document.getElementById('damage-type').value,
+                severity: document.querySelector('input[name="severity"]:checked')?.value || 'N/A',
+                actionRequired: document.getElementById('action-required').value,
+                notes: document.getElementById('inspection-notes').value,
+                photo: document.getElementById('inspection-photo').files[0]
+            };
+            
+            // --- AI Simulation ---
+            let conditionScore = 100;
+            let failureRisk = "Low";
+            let maintenanceSchedule = "Routine check in 12 months.";
+
+            switch(inspectionData.severity) {
+                case 'Low': conditionScore = 85; break;
+                case 'Medium': conditionScore = 60; failureRisk = "Moderate"; maintenanceSchedule = "Re-inspect in 6 months."; break;
+                case 'High': conditionScore = 30; failureRisk = "High"; maintenanceSchedule = "Schedule replacement within 30 days."; break;
+                case 'Critical': conditionScore = 10; failureRisk = "Imminent"; maintenanceSchedule = "Immediate replacement required."; break;
+            }
+            if (inspectionData.damageType === 'Crack' && conditionScore > 30) conditionScore = 30;
+            if (inspectionData.damageType === 'Missing Component') conditionScore = 0;
+
+
+            const tmsReport = {
+                ...currentFittingData,
+                inspection: inspectionData,
+                aiAnalysis: {
+                    conditionScore: conditionScore,
+                    failureRisk: failureRisk,
+                    maintenanceSchedule: maintenanceSchedule,
+                },
+                reportDate: new Date().toISOString()
+            };
+            
+            saveToHistory(tmsReport);
+            navigate('tms-report', tmsReport);
+        }
+
+        function renderTmsReport(report) {
+            const container = document.getElementById('tms-report-screen');
+            const photoURL = report.inspection.photo ? URL.createObjectURL(report.inspection.photo) : null;
+
+            container.innerHTML = `
+                <div class="bg-[#1C2E4A] rounded-lg p-4 shadow-lg w-full">
+                    <h2 class="text-2xl font-bold text-center text-[#FF9800] mb-4">AI Inspection Report (TMS)</h2>
+                    
+                    <div class="tms-report-section">
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">${report.type.toUpperCase()} - ${report.rid}</h3>
+                        ${detailRowHTML("Location", report.current_location)}
+                        ${detailRowHTML("Report Date", new Date(report.reportDate).toLocaleString())}
+                    </div>
+
+                    <div class="tms-report-section">
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">Inspector Findings</h3>
+                        ${detailRowHTML("Damage Type", report.inspection.damageType)}
+                        ${detailRowHTML("Severity", report.inspection.severity, true)}
+                        ${detailRowHTML("Inspector Notes", report.inspection.notes || 'N/A')}
+                        ${photoURL ? `<div class="mt-4"><p class="text-gray-400">Attached Photo:</p><img src="${photoURL}" class="rounded-lg mt-2 w-full"></div>` : ''}
+                    </div>
+
+                    <div class="tms-report-section">
+                        <h3 class="text-xl font-semibold text-gray-200 mb-2">AI Analysis & Predictions</h3>
+                        <div class="text-center my-4">
+                            <p class="text-lg text-gray-300">Condition Score</p>
+                            <p class="text-5xl font-bold ${report.aiAnalysis.conditionScore < 40 ? 'text-red-500' : 'text-green-500'}">${report.aiAnalysis.conditionScore} <span class="text-3xl">/ 100</span></p>
+                        </div>
+                        ${detailRowHTML("Predicted Failure Risk", report.aiAnalysis.failureRisk, true)}
+                        ${detailRowHTML("Recommended Action", report.inspection.actionRequired)}
+                        ${detailRowHTML("Next Maintenance", report.aiAnalysis.maintenanceSchedule)}
+                    </div>
+
+                    <button onclick="navigate('home')" class="mt-4 w-full bg-[#FF9800] text-black font-bold py-3 rounded-full text-lg">Done</button>
+                </div>
+            `;
+        }
+        
+        // --- WebRTC Logic ---
+        async function startCall() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('localVideo').srcObject = localStream;
+                document.getElementById('startCallButton').classList.add('hidden');
+                document.getElementById('createOfferButton').classList.remove('hidden');
+                document.getElementById('endCallButton').classList.remove('hidden');
+                document.getElementById('signaling-ui').classList.remove('hidden');
+            } catch (error) {
+                alert("Error accessing media devices: " + error);
+                console.error('Error accessing media devices.', error);
+            }
+        }
+        
+        async function createOffer() {
+            peerConnection = new RTCPeerConnection(configuration);
+            setupPeerConnectionEvents();
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            
+            document.getElementById('offerAnswerText').value = JSON.stringify(peerConnection.localDescription);
+        }
+
+        async function handleReceivedOfferAnswer() {
+            let offerAnswer;
+            try {
+                offerAnswer = JSON.parse(document.getElementById('receivedOfferAnswerText').value);
+            } catch (e) {
+                alert('Invalid Offer/Answer format. Please paste valid JSON.');
+                return;
+            }
+
+            if (!peerConnection) { // This is Peer 2, receiving an offer
+                peerConnection = new RTCPeerConnection(configuration);
+                setupPeerConnectionEvents();
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerAnswer));
+                
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                document.getElementById('offerAnswerText').value = JSON.stringify(peerConnection.localDescription);
+                document.getElementById('createOfferButton').classList.add('hidden'); // Hide offer button for peer 2
+            } else { // This is Peer 1, receiving an answer
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerAnswer));
+            }
+        }
+
+        async function handleAddIceCandidate() {
+             let candidate;
+            try {
+                candidate = JSON.parse(document.getElementById('receivedIceCandidateText').value);
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                document.getElementById('receivedIceCandidateText').value = '';
+            } catch (e) {
+                alert('Invalid ICE Candidate format. Please paste valid JSON.');
+                return;
+            }
+        }
+        
+        function setupPeerConnectionEvents() {
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    console.log('New ICE Candidate:', event.candidate);
+                    // In a real app, this would be sent over the signaling server
+                    // For manual, we can log it and maybe add it to a list for copying
+                     document.getElementById('offerAnswerText').value = JSON.stringify(event.candidate);
+                }
+            };
+            
+            peerConnection.ontrack = event => {
+                document.getElementById('remoteVideo').srcObject = event.streams[0];
+            };
+        }
+
+        function endCall() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            document.getElementById('startCallButton').classList.remove('hidden');
+            document.getElementById('createOfferButton').classList.add('hidden');
+            document.getElementById('endCallButton').classList.add('hidden');
+            document.getElementById('signaling-ui').classList.add('hidden');
+            document.getElementById('offerAnswerText').value = '';
+            document.getElementById('receivedOfferAnswerText').value = '';
+            document.getElementById('receivedIceCandidateText').value = '';
+        }
+
+        // --- History ---
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('scan_history') || '[]');
+        }
+
+        function saveToHistory(item) {
+            let history = getHistory();
+            const record = { ...item, reportDate: new Date().toISOString() };
+            history = history.filter(h => h.rid !== item.rid);
+            history.unshift(record);
+            localStorage.setItem('scan_history', JSON.stringify(history.slice(0, 50)));
+        }
+
+        function renderHistory() {
+            const historyContainer = document.getElementById('history-screen');
+            const history = getHistory();
+
+            if (history.length === 0) {
+                historyContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">No inspection history found.</p>`;
+                return;
+            }
+
+            historyContainer.innerHTML = history.map(item => `
+                <div class="bg-[#1C2E4A] p-4 rounded-lg shadow-lg cursor-pointer" onclick="navigate('tms-report', ${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                    <p class="font-bold text-lg">${item.rid} - ${item.type}</p>
+                    <p class="text-sm text-gray-400">Last Inspected: ${new Date(item.reportDate).toLocaleString()}</p>
+                    <p class="text-md mt-2 font-semibold ${item.aiAnalysis.conditionScore < 40 ? 'text-red-400' : 'text-green-400'}">Condition Score: ${item.aiAnalysis.conditionScore}/100</p>
+                </div>
+            `).join('');
+        }
+
+        // --- Settings ---
+        function saveSettings() {
+            const newIp = document.getElementById('server-ip').value;
+            if (newIp) {
+                serverIp = newIp;
+                localStorage.setItem('server_ip', newIp);
+                alert(`Settings saved. Server IP is now ${newIp}`);
+                navigate('home');
+            } else {
+                alert('Please enter a valid IP address.');
+            }
+        }
+
+        // --- App Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            serverIp = localStorage.getItem('server_ip') || '192.168.1.10';
+            navigate('home');
+        });
+
+    </script>
+</body>
+</html>
+

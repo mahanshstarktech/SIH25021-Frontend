@@ -1,0 +1,46 @@
+[
+    {
+        "rid": "RID001",
+        "type": "Sensor",
+        "manufacturer": "Siemens",
+        "batch": "B23",
+        "material": "Steel",
+        "installed": "2025-09-27",
+        "status": "Active",
+        "location": "Plant A",
+        "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABmUlEQVR4nO1ZwW3DMAw8SQbylIEO0FHsDTpTR+oG0SjZwPrLYEHadIDk0X5iORbvYUjEAT7IFHWiHeFvJP8PEmAshbEUxlIYS2Gs2iy3oltHY9bIWFVXE6yBGBNA1yUQJEDvof7NWXnLcYRlxWUbVNd1Zlb3MHfD1LsD6PItstLnVml2eiNaz/vIC55lOHfEI3oD9f4MrCSmpudT93YhN2JebE5tXQ3kPd0DqYdbt0FNXb4ZlmOLI64eAxXQt24D8/cvZEFtfCAgFtA1Frb7POKYGP/rUdX7c9Sc2QG5g0PkaebKEyctRkdV78/ASn0gSXmiKZBM5b5VW1cTHjN3xYnFAUKRJac0hlJNl2+m3t8hBX7t50za6LF6/9qzViAHLk8jr/j2ZWzt9+lj0jQ7DPxg22Mec4963wPDD/hepT5nuFkfc1cWcfK7UWvODm9sl9U9BtJX4V4at3bujYWjqvenYMUt0fOF/T2fAbIDKutqIO/TcosK/O/kg4s+W3tJ/kq6fIN9TAKKTq3mPMNYCmMpjKUwluKorF9wXrgfHgmtTQAAAABJRU5ErkJggg=="
+    },
+    {
+        "rid": "RID002",
+        "type": "Valve",
+        "manufacturer": "Bosch",
+        "batch": "C56",
+        "material": "Plastic",
+        "installed": "2025-09-27",
+        "status": "Inactive",
+        "location": "Plant B",
+        "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABmUlEQVR4nO2ZUWrDMAyGJTuwRwd2oORqO9Ju0BxlBxjEj4OUf0iO23QdbC+NXUf/g2O7H/QnyIqiMOhvTe4fEJFRWUZlGZVlVJZRpSle1RGPUYe8Mxb11TbVpctwkjG+EqaeGBT9ovtcypc7EBUvMR4W0pkeg+K+Wqa6H2u+36rYvWuMCkCVvtqjuvUa5IZHyfzvTJAZnsC9a4GatKjpde7BI51TmVPa1wHiHpud8MXrMSjpyx2GYi1spKrXJd7yMbD6/oEUQXVKs1TUEw1YCCfyoEF/rdW9a+NZO0t56cEUPjtQ7IllD3W7dw3EPaXwDhL3QY+Bx/ZU1OreNfGsjb0ML9CErwOmcW0s1OvePTVFuBXJCdBCE5g181vcPzjnrNJMI0NKPJZz9qAGvcczSXVzZhrmM1+7atW7f/I6J/bSTpBUf6lzhg/rY+5KQTINjznn7PCPx6W63zahx2DTWKjVvWuCCtdA96BJu2r69bCwrwPE/ZQaOV6/nSzyhrvIM8D6mHu8W2Vhs7Sccy+jsozKMirLqKxaqW8zoLJGmUEUsAAAAABJRU5ErkJggg=="
+    },
+    {
+        "rid": "RID003",
+        "type": "sensor",
+        "manufacturer": "bosch",
+        "batch": "C55",
+        "material": "Steel",
+        "installed": "2025-09-26",
+        "status": "Active",
+        "location": "Plant A",
+        "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABoElEQVR4nO1Z222EMBAcG0v5hA5Siq+DlBSlpHQApaSASPgzEqeNdhdzp0Sny0c4jNn54GFG8sher8eLI9zH4P9AAoyVYawMY2UYK8NYW7PcjADnOsCdUm45barrEKxIjBGgPgVuaKSB9qF+56yUYzzKBOhaCNvrqpkVfrw7oFm3R2+sm6x2wpzly9JVb9y3nNoTPyUH4ifagXpfA2sQU9NJvm/InXBWm7O1rgPEPV0ahucvNy+DLXX5A7CgVjLKZRS3OanP4QnQD9SXqt7XwTpLtBMGPlu9ygSo099YV/1xP6Mh6tsJcsqSqVBY3K9+ru1bTvXpiYO/ITlvrdfjHRwp34882FfLgFdALixY3K859hforqv1HN16bewfVccEZIdtJ8iuOzuestVXU8d8Y38fR7E9S3WhcPU7ZYX5njogvkstLXBNoYOLH+YxHzL2GQScg4v9Ut4pWr2vauwxvHxq3F8XFkpV72upKRCNi6nkL+I7zeesHveDnqIauNjrD5QJSLzh/nuP3lg36ph09Wo55zeMlWGsDGNlGCujVNY3t7nZLQoH8wAAAAAASUVORK5CYII="
+    },
+    {
+        "rid": "RID004",
+        "type": "sensor",
+        "manufacturer": "bosch",
+        "batch": "C55",
+        "material": "Steel",
+        "installed": "2025-09-11",
+        "status": "Active",
+        "location": "test",
+        "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABkElEQVR4nO2ZQY6DMAxF7RBpliD1AD1KuMGcdW5AjtIDjNQsR6LyyA4etcyi3VBC4r+IIDyJLxOMY5DguaJ7AQIwSmWUyiiVUSqj9qZwkc9HAElnxl19NUEFYl0BZMAROpmgY7g/OJWWNY54XiIur8Huvmqm/OqcIPm5AF+uRSoON3zvHaH1dd9zokkACP13nqMDuHc1UFGKmoG/upcPjvotlzl7+6qa8qs1TvE862uwpy/XDIVj4oeQpLT3QBNw0k+eq809fdVNQa7jJz6a+r+jfDrr1VLdu0NTkKNLvK2aoCMIJDlH60zZdFnsN133vUY85Kew7HBt3b9j3Xc53dwp8JzFfjsKV/9OEPrrP8j+nbyljwnhIhWP5x2udNW2ueMztZNzINwlHvngyhynf8s5m/cU0gAQviTLn7ihdpopYvHuXYW9tCjdBS38i/DVAIVjP/PwgzhqT78EXy30MSl+8jBKQ40Ay3bvaoh9zEHuONieh8cmfqnuXV19TCjDlzNqkVEqo1RGqYxSvbav/QXAmsLoan5lCgAAAABJRU5ErkJggg=="
+    }
+]
