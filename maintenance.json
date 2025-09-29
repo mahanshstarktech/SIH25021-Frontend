@@ -1,0 +1,16 @@
+{
+  "RID001": [
+    {"by": "Engineer X", "action": "Routine calibration"},
+    {"by": "Engineer Y", "action": "Lubricated parts"}
+  ],
+  "RID002": [
+    {"by": "Engineer Z", "action": "Pressure test"}
+  ],
+  "RID003": [
+    {"by": "Engineer P", "action": "Oil replacement"},
+    {"by": "Engineer Q", "action": "Vibration analysis"}
+  ],
+  "RID004": [
+    {"by": "Engineer R", "action": "Full motor inspection"}
+  ]
+}

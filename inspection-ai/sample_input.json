@@ -1,0 +1,12 @@
+{
+  "damage_type": "Crack",
+  "severity": "Critical",
+  "action_required": "Immediate Replacement",
+  "photo_filename": "IMG_20250928_12345.jpg",
+  "inspector_name": "A. Verma",
+  "inspector_id": "INSP-2043",
+  "vendor": "RailTech Industries",
+  "batch": "BATCH-4821",
+  "location": "Jaipur Substation A",
+  "timestamp": "2025-09-28T11:15:00+05:30"
+}

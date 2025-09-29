@@ -1,0 +1,4 @@
+vendor,batch,total_inspected,total_failures,fail_rate
+RailTech Industries,BATCH-4821,100,25,0.25
+RailTech Industries,BATCH-4820,200,10,0.05
+OtherMaker,BATCH-1001,150,8,0.0533

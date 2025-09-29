@@ -1,44 +1,48 @@
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from datetime import date
 from pathlib import Path
+from datetime import date
 import json
 from utils.qr_utils import generate_qr_base64
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-DATA_FILE = Path("items.json")
+# ------------------ File paths ------------------
+ITEMS_FILE = Path("items.json")
+REPAIRS_FILE = Path("repairs.json")
+MAINTENANCE_FILE = Path("maintenance.json")
 
-def load_items():
-    if DATA_FILE.exists() and DATA_FILE.stat().st_size > 0:
+# ------------------ Helpers ------------------
+def load_json(path: Path, default):
+    if path.exists() and path.stat().st_size > 0:
         try:
-            with open(DATA_FILE, "r") as f:
-                items = json.load(f)
-
-            # ✅ Migration: ensure each item has a qr_code
-            changed = False
-            for item in items:
-                if "qr_code" not in item or not item["qr_code"]:
-                    item["qr_code"] = generate_qr_base64(item["rid"])
-                    changed = True
-
-            if changed:
-                with open(DATA_FILE, "w") as f:
-                    json.dump(items, f, indent=4)
-
-            return items
+            with open(path, "r") as f:
+                return json.load(f)
         except json.JSONDecodeError:
-            return []
-    return []
+            return default
+    return default
 
-def save_items():
-    with open(DATA_FILE, "w") as f:
-        json.dump(ITEMS, f, indent=4)
+def save_json(path: Path, data):
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4)
 
-# Load initial items with migration
-ITEMS = load_items()
+# ------------------ Load Data ------------------
+ITEMS = load_json(ITEMS_FILE, [])
+REPAIRS = load_json(REPAIRS_FILE, {})
+MAINTENANCE = load_json(MAINTENANCE_FILE, {})
+
+# ✅ Ensure every item has a qr_code
+changed = False
+for item in ITEMS:
+    if "qr_code" not in item or not item["qr_code"]:
+        item["qr_code"] = generate_qr_base64(item["rid"])
+        changed = True
+if changed:
+    save_json(ITEMS_FILE, ITEMS)
+
+# ------------------ Routes ------------------
 
 @router.get("/", tags=["items"])
 def get_items():
@@ -76,9 +80,20 @@ def add_item(
         "qr_code": generate_qr_base64(rid)  # ✅ stored at creation
     }
     ITEMS.append(new_item)
-    save_items()
+    save_json(ITEMS_FILE, ITEMS)
     return RedirectResponse(url="/items/view", status_code=303)
 
+# ------------------ Repairs & Maintenance ------------------
+
+@router.get("/{rid}/repairs")
+def get_repairs(rid: str):
+    return REPAIRS.get(rid, [])
+
+@router.get("/{rid}/maintenance")
+def get_maintenance(rid: str):
+    return MAINTENANCE.get(rid, [])
+
+# ------------------ Get single item ------------------
 @router.get("/{rid}", tags=["items"])
 def get_item(rid: str):
     for item in ITEMS:

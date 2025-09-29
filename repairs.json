@@ -1,0 +1,16 @@
+{
+  "RID001": [
+    {"by": "Technician A", "action": "Replaced sensor wire", "date": "2025-09-20"},
+    {"by": "Technician B", "action": "Cleaned dust", "date": "2025-09-21"}
+  ],
+  "RID002": [
+    {"by": "Technician C", "action": "Fixed valve leakage", "date": "2025-09-22"}
+  ],
+  "RID003": [
+    {"by": "Technician D", "action": "Replaced broken seal", "date": "2025-09-23"},
+    {"by": "Technician E", "action": "Realigned pump shaft", "date": "2025-09-24"}
+  ],
+  "RID004": [
+    {"by": "Technician F", "action": "Replaced motor bearings", "date": "2025-09-25"}
+  ]
+}
