@@ -4,6 +4,8 @@ import os
 from .rules import get_condition_score, get_predicted_failure_risk, get_suggested_sku, check_vendor_alert
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+
 
 REPORTS_DIR = "data/reports"
 
@@ -56,43 +58,55 @@ def generate_pdf(report: dict) -> str:
     width, height = A4
     y = height - 50
 
+    def draw_section(title, data):
+        nonlocal y
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, y, title)
+        y -= 25
+        c.setFont("Helvetica", 12)
+
+        for key, value in data.items():
+            nice_key = key.replace("_", " ").title()
+
+            # Embed the photo if key is photo_filename and file exists
+            if key == "photo_filename" and value:
+                photo_path = f"data/photos/{value}"  # assuming photos are stored here
+                if os.path.exists(photo_path):
+                    try:
+                        img = ImageReader(photo_path)
+                        img_width = 100  # width in points
+                        img_height = 100  # height in points
+                        c.drawImage(img, 70, y - img_height + 15, width=img_width, height=img_height)
+                        y -= img_height + 10
+                    except Exception as e:
+                        c.drawString(70, y, f"{nice_key}: {value} (Image load failed)")
+                        y -= 18
+                else:
+                    c.drawString(70, y, f"{nice_key}: {value} (Image not found)")
+                    y -= 18
+            else:
+                c.drawString(70, y, f"{nice_key}: {value}")
+                y -= 18
+        y -= 10  # Extra spacing after section
+
+    # Title
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(width / 2, y, f"Inspection Report")
+    y -= 40
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, f"Inspection Report: {report_id}")
+    c.drawCentredString(width / 2, y, f"Report ID: {report_id}")
     y -= 40
 
+    # Sections
+    draw_section("Inspected Item", report.get("inspected_item", {}))
+    draw_section("AI Analysis", report.get("ai_analysis", {}))
+    draw_section("Work Order", report.get("work_order", {}))
+    draw_section("Supervisor Approval", report.get("approval", {}))
+
+    # Footer
     c.setFont("Helvetica", 12)
-    # Inspected Item
-    c.drawString(50, y, "Inspected Item:")
-    y -= 20
-    for key, value in report.get("inspected_item", {}).items():
-        c.drawString(70, y, f"{key}: {value}")
-        y -= 15
-
-    y -= 10
-    # AI Analysis
-    c.drawString(50, y, "AI Analysis:")
-    y -= 20
-    for key, value in report.get("ai_analysis", {}).items():
-        c.drawString(70, y, f"{key}: {value}")
-        y -= 15
-
-    y -= 10
-    # Work Order
-    c.drawString(50, y, "Work Order:")
-    y -= 20
-    for key, value in report.get("work_order", {}).items():
-        c.drawString(70, y, f"{key}: {value}")
-        y -= 15
-
-    y -= 10
-    # Supervisor Approval
-    c.drawString(50, y, "Supervisor Approval:")
-    y -= 20
-    c.drawString(70, y, "Supervisor Signature: ____________________")
-    y -= 20
-    c.drawString(70, y, f"Date: {datetime.date.today().isoformat()}")
-    y -= 20
-
+    c.drawString(50, 50, f"Generated on: {datetime.date.today().isoformat()}")
     c.showPage()
     c.save()
+
     return filename
