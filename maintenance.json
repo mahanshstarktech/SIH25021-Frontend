@@ -1,16 +1,16 @@
 {
   "RID001": [
-    {"by": "Engineer X", "action": "Routine calibration"},
-    {"by": "Engineer Y", "action": "Lubricated parts"}
+    {"by": "Engineer X", "action": "Routine calibration", "date": "2025-09-15"},
+    {"by": "Engineer Y", "action": "Lubricated parts", "date": "2025-09-16"}
   ],
   "RID002": [
-    {"by": "Engineer Z", "action": "Pressure test"}
+    {"by": "Engineer Z", "action": "Pressure test", "date": "2025-09-17"}
   ],
   "RID003": [
-    {"by": "Engineer P", "action": "Oil replacement"},
-    {"by": "Engineer Q", "action": "Vibration analysis"}
+    {"by": "Engineer P", "action": "Oil replacement", "date": "2025-09-18"},
+    {"by": "Engineer Q", "action": "Vibration analysis", "date": "2025-09-19"}
   ],
   "RID004": [
-    {"by": "Engineer R", "action": "Full motor inspection"}
+    {"by": "Engineer R", "action": "Full motor inspection", "date": "2025-09-20"}
   ]
 }

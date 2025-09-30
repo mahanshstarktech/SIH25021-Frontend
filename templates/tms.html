@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMS Portal Clone</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>TMS Portal - Uploaded Reports</h1>
+    <table id="tmsTable">
+      <thead>
+        <tr>
+          <th>Report ID</th>
+          <th>File Name</th>
+          <th>Uploaded At</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadTmsEntries() {
+      try {
+        const res = await fetch("/tms/entries");
+        const data = await res.json();
+
+        const tbody = document.querySelector("#tmsTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(entry => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${entry.report_id || "-"}</td>
+            <td>${entry.filename || "-"}</td>
+            <td>${new Date(entry.timestamp).toLocaleString()}</td>
+            <td>
+  ${entry.pdf_url ? `<a href="${entry.pdf_url}" target="_blank" class="btn btn-view">View</a>` : '-'}
+</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Error loading TMS entries:", err);
+      }
+    }
+
+    loadTmsEntries();
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-view {
+      background: #28a745;
+      color: #fff;
+    }
+    .btn-view:hover {
+      background: #218838;
+    }
+  </style>
+</body>
+</html>

@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 # Import routers
-from routes import auth, items, inspection
+from routes import auth, items, inspection, tms
 
 app = FastAPI(title="UDM Portal Clone")
 
@@ -21,6 +21,9 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(items.router, prefix="/items", tags=["items"])
 app.include_router(inspection.router, prefix="/inspection", tags=["inspection"])
+app.include_router(tms.router, prefix="/tms", tags=["tms"])  # ✅ Added TMS routes
+app.include_router(tms.router, prefix="/tms", tags=["tms"])
+app.include_router(tms.router, prefix="/tms", tags=["tms"])
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
